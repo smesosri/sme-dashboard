@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Keragaan SME – Solo Slamet Riyadi</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--navy:#0a1628;--navy-mid:#162040;--blue:#1a3a6c;--accent:#e8b84b;--red:#c0392b;--green:#1a7a4a;--green-light:#27ae60;--gray-dark:#2c3e50;--gray:#5a6a7e;--gray-light:#ecf0f4;--white:#ffffff;--border:#c8d6e5;--text:#1a2636;--text-muted:#6b7a8d;--shadow:0 2px 12px rgba(10,22,40,.12);--radius:8px;--mono:'Courier New',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;color:var(--text);min-height:100vh}
+
+/* LOGIN */
+#loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy),var(--blue));display:flex;align-items:center;justify-content:center;z-index:9999}
+.login-box{background:var(--white);border-radius:16px;padding:40px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.4);text-align:center}
+.login-logo{width:60px;height:60px;background:var(--accent);border-radius:12px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:var(--navy)}
+.login-box h2{font-size:18px;font-weight:800;margin-bottom:4px}
+.login-box p{font-size:12px;color:var(--text-muted);margin-bottom:24px}
+.login-input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:var(--mono);letter-spacing:4px;text-align:center;margin-bottom:12px}
+.login-input:focus{outline:none;border-color:var(--blue)}
+.login-btn{width:100%;padding:11px;background:var(--blue);color:var(--white);border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.login-btn:hover{background:var(--navy)}
+.login-err{color:var(--red);font-size:12px;margin-top:8px;display:none}
+.login-change{font-size:11px;color:var(--text-muted);margin-top:16px;cursor:pointer;text-decoration:underline}
+
+/* HEADER */
+header{background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 100%);color:var(--white);position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.3)}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-logo{width:38px;height:38px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:var(--navy)}
+.brand h1{font-size:14px;font-weight:700;line-height:1.2}
+.brand p{font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.5px;text-transform:uppercase}
+.hdr-meta{display:flex;align-items:center;gap:12px}
+.date-badge{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 12px;font-size:11px;color:var(--accent);font-weight:600}
+.dots{display:flex;gap:8px}
+.sdot{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,.7)}
+.dot{width:7px;height:7px;border-radius:50%;background:#e74c3c}
+.dot.ok{background:var(--green-light);box-shadow:0 0 6px var(--green-light)}
+nav{display:flex;padding:0 20px;gap:2px;overflow-x:auto}
+.ntab{padding:9px 16px;background:transparent;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:12px;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;font-family:inherit}
+.ntab:hover{color:var(--white)}
+.ntab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* UPLOAD PANEL */
+.upload-panel{background:var(--white);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ul{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.ubtn{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1.5px dashed var(--border);border-radius:6px;background:var(--gray-light);cursor:pointer;font-size:11px;font-weight:600;color:var(--blue);transition:all .2s;font-family:inherit}
+.ubtn:hover{background:#dae8f5;border-color:var(--blue)}
+.ubtn.ok{border-style:solid;border-color:var(--green);background:#eafaf1;color:var(--green)}
+.ufreq{font-size:9px;color:var(--text-muted);background:#f7f9fb;border-radius:8px;padding:1px 6px;border:1px solid var(--border)}
+input[type=file]{display:none}
+
+/* MAIN */
+main{padding:16px 20px;max-width:1800px;margin:0 auto}
+.section-title{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* CONTROLS */
+.cbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.clabel{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+select{padding:7px 28px 7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;background:var(--white);color:var(--text);cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7a8d'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;min-width:160px}
+select:focus{outline:none;border-color:var(--blue)}
+
+/* BUTTONS */
+.btn{padding:7px 14px;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:var(--blue);color:var(--white)}.btn-primary:hover{background:var(--navy)}
+.btn-success{background:var(--green);color:var(--white)}
+.btn-accent{background:var(--accent);color:var(--navy)}
+.btn-outline{background:var(--white);color:var(--blue);border:1.5px solid var(--blue)}.btn-outline:hover{background:var(--gray-light)}
+.btn-danger{background:var(--red);color:var(--white)}
+.btn-sm{padding:5px 10px;font-size:11px}
+
+/* PAGE */
+.page{display:none}.page.active{display:block}
+
+/* DASHBOARD TABLE */
+.tbox{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:auto;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead{background:var(--navy);color:var(--white);position:sticky;top:0;z-index:10}
+thead th{padding:7px 10px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.3px;white-space:nowrap;border-right:1px solid rgba(255,255,255,.08)}
+thead th.tl{text-align:left}
+thead tr.sub-head{background:var(--navy-mid)}
+tbody tr:nth-child(even){background:#f8fafb}
+tbody tr:hover{background:#eef3f8}
+tbody tr.gh td{background:#e2eaf5;font-weight:800;color:var(--navy);border-top:2px solid var(--blue);font-size:12px}
+tbody tr.sub td{padding-left:20px;color:var(--gray-dark)}
+td{padding:5px 10px;border-bottom:1px solid #f0f4f8}
+td.r{text-align:right;font-family:var(--mono);font-size:10px;white-space:nowrap}
+td.tl{text-align:left}
+.pos{color:var(--green);font-weight:700}
+.neg{color:var(--red);font-weight:700}
+.pct-ok{color:var(--green);font-weight:700}
+.pct-bad{color:var(--red);font-weight:700}
+.tag{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+.t-today{background:#d4efff;color:#0a5fa8}
+.t-mtd{background:#fde8e8;color:var(--red)}
+.t-mtm{background:#fdebd0;color:#d35400}
+.t-ytd{background:#e8f8f0;color:var(--green)}
+.t-rka{background:#f0eaff;color:#6b2fa0}
+
+/* BADGE */
+.badge{padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700}
+.bl{background:#d4f5e3;color:var(--green)}
+.bs{background:#fdebd0;color:#d35400}
+.bn{background:#fde8e8;color:var(--red)}
+.cnt-badge{background:var(--blue);color:var(--white);border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700}
+
+/* DEBITUR TABLE */
+.filter-bar{padding:10px 14px;background:var(--gray-light);border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.filter-bar input[type=text]{padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;background:var(--white);min-width:180px}
+.filter-bar input:focus{outline:none;border-color:var(--blue)}
+thead th.sortable{cursor:pointer;user-select:none}
+thead th.sortable:hover{background:rgba(255,255,255,.15)}
+.sort-asc::after{content:' ▲';font-size:8px}
+.sort-desc::after{content:' ▼';font-size:8px}
+
+/* RKA */
+.rka-header{background:var(--navy);color:var(--white);padding:10px 14px;border-radius:var(--radius) var(--radius) 0 0;font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.rka-section{background:var(--white);border-radius:0 0 var(--radius) var(--radius);box-shadow:var(--shadow);overflow:auto;margin-bottom:16px}
+.rka-month-hdr{display:grid;grid-template-columns:200px repeat(12,1fr);background:var(--navy-mid);color:var(--white);font-size:9px;font-weight:700;text-align:center;min-width:900px}
+.rka-month-hdr div{padding:5px 3px;border-right:1px solid rgba(255,255,255,.1)}
+.rka-row{display:grid;grid-template-columns:200px repeat(12,1fr);border-bottom:1px solid #f0f4f8;min-width:900px}
+.rka-row:hover{background:#f8fafb}
+.rka-row div{padding:5px 3px;font-size:10px;text-align:right;border-right:1px solid #f0f4f8}
+.rka-row div:first-child{text-align:left;font-weight:600;color:var(--navy);font-size:10px;padding-left:10px}
+.rka-row.sub div:first-child{padding-left:20px;color:var(--gray);font-weight:400}
+.rka-row input[type=number]{width:100%;border:none;background:transparent;text-align:right;font-family:var(--mono);font-size:10px;color:var(--text);padding:1px 3px}
+.rka-row input:focus{outline:2px solid var(--blue);border-radius:2px;background:var(--white)}
+
+/* JATUH TEMPO */
+.jt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:20px}
+.jt-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.jt-card-hdr{padding:10px 14px;background:var(--navy-mid);color:var(--white);font-size:12px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.jt-card-body{padding:12px 14px}
+.jt-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f0f4f8;font-size:11px}
+.jt-row:last-child{border-bottom:none}
+
+/* GUIDE */
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.gcard{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.gcard-hdr{background:var(--navy);color:var(--white);padding:12px 14px;display:flex;align-items:center;gap:10px}
+.gcard-hdr .snum{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;flex-shrink:0}
+.gcard-hdr h3{font-size:13px;font-weight:700}
+.gcard-body{padding:14px;font-size:12px;line-height:1.7;color:var(--gray-dark)}
+.gcard-body ul{list-style:none;padding:0}
+.gcard-body ul li{padding:3px 0 3px 16px;position:relative;border-bottom:1px solid #f0f4f8}
+.gcard-body ul li::before{content:'→';position:absolute;left:0;color:var(--accent);font-weight:700}
+.deploy-box{background:var(--navy);color:var(--white);border-radius:var(--radius);padding:16px;margin-top:12px}
+.deploy-box h3{color:var(--accent);margin-bottom:10px;font-size:13px}
+.deploy-box ol{padding-left:18px}
+.deploy-box li{font-size:11px;padding:4px 0;line-height:1.5;border-bottom:1px solid rgba(255,255,255,.1)}
+code{background:rgba(255,255,255,.12);border-radius:3px;padding:1px 5px;font-family:var(--mono);font-size:11px;color:var(--accent)}
+.alert-box{background:#fff8e1;border-left:4px solid var(--accent);border-radius:6px;padding:10px 14px;margin-top:10px;font-size:11px;line-height:1.6;color:var(--gray-dark)}
+
+/* EMPTY */
+.empty{text-align:center;padding:48px 20px;color:var(--text-muted)}
+.empty .ei{font-size:40px;margin-bottom:10px}
+.empty h3{font-size:15px;font-weight:700;margin-bottom:6px}
+.empty p{font-size:12px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">SME</div>
+    <h2>Dashboard Keragaan SME</h2>
+    <p>KC Solo Slamet Riyadi &amp; KCP</p>
+    <input class="login-input" id="loginPin" type="password" maxlength="8" placeholder="••••" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Masuk</button>
+    <div class="login-err" id="loginErr">Kode akses salah</div>
+    <div class="login-change" onclick="showChangePinUI()">Ubah kode akses</div>
+  </div>
+</div>
+
+<!-- FILE INPUTS (hidden) -->
+<input type="file" id="fileToday" accept=".xlsx,.xls" onchange="loadLW(this,'today')">
+<input type="file" id="fileMTM"   accept=".xlsx,.xls" onchange="loadLW(this,'mtm')">
+<input type="file" id="fileMTD"   accept=".xlsx,.xls" onchange="loadLW(this,'mtd')">
+<input type="file" id="fileYTD"   accept=".xlsx,.xls" onchange="loadLW(this,'ytd')">
+<input type="file" id="fileRKAImport" accept=".xlsx,.xls" onchange="importRKAFile(this)">
+
+<header>
+  <div class="header-top">
+    <div class="brand">
+      <div class="brand-logo">SME</div>
+      <div><h1>Dashboard Keragaan SME</h1><p>KC Solo Slamet Riyadi &amp; KCP</p></div>
+    </div>
+    <div class="hdr-meta">
+      <div class="date-badge" id="hdrDate">—</div>
+      <div class="dots">
+        <div class="sdot"><div class="dot" id="dToday"></div>Today</div>
+        <div class="sdot"><div class="dot" id="dMTM"></div>MTM</div>
+        <div class="sdot"><div class="dot" id="dMTD"></div>MTD</div>
+        <div class="sdot"><div class="dot" id="dYTD"></div>YTD</div>
+      </div>
+    </div>
+  </div>
+  <nav>
+    <button class="ntab active" onclick="goPage('dashboard',this)">📊 Dashboard Uker</button>
+    <button class="ntab" onclick="goPage('kolek',this)">📋 Kolektibilitas</button>
+    <button class="ntab" onclick="goPage('debitur',this)">👥 Data Debitur</button>
+    <button class="ntab" onclick="goPage('jt',this)">📅 Jatuh Tempo</button>
+    <button class="ntab" onclick="goPage('rka',this)">🎯 Input RKA</button>
+    <button class="ntab" onclick="goPage('panduan',this)">📖 Panduan</button>
+  </nav>
+</header>
+
+<!-- UPLOAD PANEL -->
+<div class="upload-panel">
+  <span class="ul">Upload Data:</span>
+  <button class="ubtn" id="btnToday" onclick="document.getElementById('fileToday').click()">
+    <span id="iToday">📂</span> LW Today <span class="ufreq">Harian</span>
+  </button>
+  <button class="ubtn" id="btnMTM" onclick="document.getElementById('fileMTM').click()">
+    <span id="iMTM">📂</span> LW MTM <span class="ufreq">Harian</span>
+  </button>
+  <button class="ubtn" id="btnMTD" onclick="document.getElementById('fileMTD').click()">
+    <span id="iMTD">📂</span> LW MTD <span class="ufreq">Bulanan</span>
+  </button>
+  <button class="ubtn" id="btnYTD" onclick="document.getElementById('fileYTD').click()">
+    <span id="iYTD">📂</span> LW YTD <span class="ufreq">Tahunan</span>
+  </button>
+  <div style="margin-left:auto;display:flex;gap:8px">
+    <button class="btn btn-outline btn-sm" onclick="loadDemo()">🔄 Demo</button>
+    <button class="btn btn-primary btn-sm" onclick="refreshAll()">♻️ Refresh</button>
+    <button class="btn btn-danger btn-sm" onclick="clearCache()">🗑️ Clear Cache</button>
+  </div>
+</div>
+
+<main>
+
+<!-- ═══ DASHBOARD UKER ═══ -->
+<div id="page-dashboard" class="page active">
+  <div class="cbar">
+    <span class="clabel">Unit Kerja</span>
+    <select id="selUker" onchange="renderDashboard()">
+      <option value="ALL">Konsolidasi (KC &amp; KCP)</option>
+      <option value="KC">KC Solo Slamet Riyadi</option>
+      <option value="MNH">KCP Manahan</option>
+      <option value="NUS">KCP Nusukan</option>
+      <option value="MJS">KCP Mojosongo</option>
+    </select>
+    <span class="clabel">RM Pengelola</span>
+    <select id="selRMDash" onchange="renderDashboard()"><option value="ALL">Semua RM</option></select>
+    <span class="date-badge" id="dashDate" style="background:var(--blue)">—</span>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="btn btn-outline btn-sm" onclick="exportDashExcel()">⬇️ Excel</button>
+      <button class="btn btn-primary btn-sm" onclick="exportDashPDF()">🖨️ PDF</button>
+    </div>
+  </div>
+  <div class="section-title">KERAGAAN HARIAN SME</div>
+  <div class="tbox" id="dashTable">
+    <div class="empty"><div class="ei">📊</div><h3>Upload Data untuk Melihat Dashboard</h3><p>Upload LW Today + LW MTD minimal, atau klik Demo.</p></div>
+  </div>
+</div>
+
+<!-- ═══ KOLEKTIBILITAS ═══ -->
+<div id="page-kolek" class="page">
+  <div class="cbar">
+    <span class="clabel">Unit Kerja</span>
+    <select id="selUkerKolek" onchange="renderKolek()">
+      <option value="ALL">Konsolidasi</option>
+      <option value="KC">KC Solo Slamet Riyadi</option>
+      <option value="MNH">KCP Manahan</option>
+      <option value="NUS">KCP Nusukan</option>
+      <option value="MJS">KCP Mojosongo</option>
+    </select>
+    <span class="clabel">RM Pengelola</span>
+    <select id="selRMKolek" onchange="renderKolek()"><option value="ALL">Semua RM</option></select>
+    <span class="clabel">KOL Awal</span>
+    <select id="selKolAwal" onchange="renderKolek()">
+      <option value="ALL">Semua</option>
+      <option value="1">1 – Lancar</option>
+      <option value="2">2 – SML</option>
+      <option value="3">3 – NPL</option>
+    </select>
+    <span class="clabel">KOL Akhir</span>
+    <select id="selKolAkhir" onchange="renderKolek()">
+      <option value="ALL">Semua</option>
+      <option value="1">1 – Lancar</option>
+      <option value="2">2 – SML</option>
+      <option value="3">3 – NPL</option>
+    </select>
+  </div>
+  <div class="tbox">
+    <div class="filter-bar">
+      <input type="text" id="kolekSearch" placeholder="🔍 Nama / No. Rekening / PN..." oninput="filterKolekTable()">
+      <span class="cnt-badge" id="kolekCount">0 debitur</span>
+      <button class="btn btn-outline btn-sm" onclick="exportKolekCSV()">⬇️ Export</button>
+    </div>
+    <div id="kolekTable"><div class="empty"><div class="ei">📋</div><h3>Upload data untuk melihat pergerakan KOL</h3></div></div>
+  </div>
+</div>
+
+<!-- ═══ DATA DEBITUR ═══ -->
+<div id="page-debitur" class="page">
+  <div class="cbar">
+    <span class="clabel">Unit Kerja</span>
+    <select id="selUkerDeb" onchange="renderDebitur()">
+      <option value="ALL">Semua Uker</option>
+      <option value="KC">KC Solo Slamet Riyadi</option>
+      <option value="MNH">KCP Manahan</option>
+      <option value="NUS">KCP Nusukan</option>
+      <option value="MJS">KCP Mojosongo</option>
+    </select>
+    <span class="clabel">RM Pengelola</span>
+    <select id="selRMDeb" onchange="renderDebitur()"><option value="ALL">Semua RM</option></select>
+    <span class="clabel">KOL</span>
+    <select id="selKolDeb" onchange="renderDebitur()">
+      <option value="ALL">Semua</option>
+      <option value="1">Lancar</option>
+      <option value="2">SML</option>
+      <option value="3">NPL</option>
+    </select>
+    <span class="cnt-badge" id="debCount">0</span>
+    <div style="margin-left:auto"><button class="btn btn-outline btn-sm" onclick="exportDebCSV()">⬇️ Export CSV</button></div>
+  </div>
+  <div class="tbox">
+    <div class="filter-bar">
+      <input type="text" id="debSearch" placeholder="🔍 Nama / No. Rekening / PN..." oninput="filterDebTable()">
+    </div>
+    <div id="debTable"><div class="empty"><div class="ei">👥</div><h3>Upload data untuk melihat debitur</h3></div></div>
+  </div>
+</div>
+
+<!-- ═══ JATUH TEMPO ═══ -->
+<div id="page-jt" class="page">
+  <div class="cbar">
+    <span class="clabel">Unit Kerja</span>
+    <select id="selUkerJT" onchange="renderJT()">
+      <option value="ALL">Semua Uker</option>
+      <option value="KC">KC Solo Slamet Riyadi</option>
+      <option value="MNH">KCP Manahan</option>
+      <option value="NUS">KCP Nusukan</option>
+      <option value="MJS">KCP Mojosongo</option>
+    </select>
+    <span class="clabel">RM Pengelola</span>
+    <select id="selRMJT" onchange="renderJT()"><option value="ALL">Semua RM</option></select>
+    <span class="clabel">KOL</span>
+    <select id="selKolJT" onchange="renderJT()">
+      <option value="ALL">Semua</option>
+      <option value="1">Lancar</option>
+      <option value="2">SML</option>
+      <option value="3">NPL</option>
+    </select>
+  </div>
+  <div class="section-title">Jatuh Tempo 3 Bulan ke Depan</div>
+  <div id="jtMonthCards"></div>
+  <div class="tbox" style="margin-top:8px">
+    <div class="filter-bar">
+      <input type="text" id="jtSearch" placeholder="🔍 Nama / No. Rekening..." oninput="filterJTTable()">
+      <span class="cnt-badge" id="jtCount">0</span>
+      <button class="btn btn-outline btn-sm" onclick="exportJTCSV()">⬇️ Export</button>
+    </div>
+    <div id="jtTable"><div class="empty"><div class="ei">📅</div><h3>Upload LW Today untuk melihat jatuh tempo</h3></div></div>
+  </div>
+</div>
+
+<!-- ═══ RKA ═══ -->
+<div id="page-rka" class="page">
+  <div class="cbar">
+    <span class="clabel">Unit Kerja</span>
+    <select id="selUkerRKA" onchange="renderRKA()">
+      <option value="ALL">Konsolidasi (KC &amp; KCP)</option>
+      <option value="KC">KC Solo Slamet Riyadi</option>
+      <option value="MNH">KCP Manahan</option>
+      <option value="NUS">KCP Nusukan</option>
+      <option value="MJS">KCP Mojosongo</option>
+    </select>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('fileRKAImport').click()">📂 Import Excel</button>
+      <button class="btn btn-success btn-sm" onclick="saveRKA()">💾 Simpan</button>
+      <button class="btn btn-primary btn-sm" onclick="exportRKA()">⬇️ Export</button>
+    </div>
+  </div>
+  <p style="font-size:11px;color:var(--text-muted);margin-bottom:14px">Satuan: <strong>Rupiah penuh</strong> (contoh: 428368387085 untuk Rp 428,368,387,085). Data tersimpan otomatis di browser.</p>
+  <div id="rkaContent"><div class="empty"><div class="ei">🎯</div><h3>Pilih Unit Kerja</h3></div></div>
+</div>
+
+<!-- ═══ PANDUAN ═══ -->
+<div id="page-panduan" class="page">
+  <div class="section-title" style="margin-bottom:14px">Panduan Penggunaan Dashboard</div>
+  <div class="guide-grid">
+    <div class="gcard">
+      <div class="gcard-hdr"><div class="snum">1</div><h3>Upload Data LW321</h3></div>
+      <div class="gcard-body">
+        <p>Dashboard membutuhkan 4 file data LW321. Semua diproses di browser — tidak dikirim ke server.</p>
+        <ul>
+          <li><strong>LW Today</strong> — Data LW321 hari ini → upload setiap pagi</li>
+          <li><strong>LW MTM</strong> — Data tanggal sama bulan lalu → upload setiap hari</li>
+          <li><strong>LW MTD</strong> — Akhir bulan lalu → update tiap awal bulan</li>
+          <li><strong>LW YTD</strong> — Akhir tahun lalu → update tiap awal tahun</li>
+        </ul>
+        <div class="alert-box">💾 Data ter-cache di browser. Besok tinggal upload LW Today + MTM saja, MTD & YTD masih tersimpan.</div>
+      </div>
+    </div>
+    <div class="gcard">
+      <div class="gcard-hdr"><div class="snum">2</div><h3>Format Kolom LW321</h3></div>
+      <div class="gcard-body">
+        <p>Dashboard membaca kolom berikut dari file LW321:</p>
+        <ul>
+          <li><code>UKER</code> — Nama unit kerja</li>
+          <li><code>NAMA_DEBITUR</code> / <code>NOMOR_REKENING</code></li>
+          <li><code>BALANCE DALAM IDR</code> atau <code>PLAFON DALAM IDR</code> — OS debitur</li>
+          <li><code>KOL_ADK</code> — Kolektibilitas (1/2/3/4/5)</li>
+          <li><code>PN PENGELOLA SINGLEPN</code> — RM pengelola</li>
+          <li><code>TGL JATUH TEMPO</code> — untuk menu Jatuh Tempo</li>
+          <li><code>LN_TYPE</code> — DL/WZ/EB/EO dll</li>
+        </ul>
+      </div>
+    </div>
+    <div class="gcard" style="grid-column:span 2">
+      <div class="gcard-hdr"><div class="snum">3</div><h3>Deploy ke GitHub Pages (Akses Online)</h3></div>
+      <div class="gcard-body">
+        <p>Agar bisa diakses semua orang via link, deploy ke GitHub Pages (gratis):</p>
+        <div class="deploy-box">
+          <h3>Langkah Deploy</h3>
+          <ol>
+            <li>Daftar / login di <code>github.com</code></li>
+            <li>New repository → nama <code>sme-dashboard</code> → Create</li>
+            <li>Upload file ini sebagai <code>index.html</code></li>
+            <li>Settings → Pages → Source: branch <code>main</code> → Save</li>
+            <li>URL aktif: <code>https://brianhayom.github.io/sme-dashboard/</code></li>
+            <li>Update konten: ganti file <code>index.html</code> di repository</li>
+          </ol>
+        </div>
+        <div class="alert-box">🔒 Data LW321 hanya ada di browser Anda, tidak disimpan di server GitHub. Aman.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ═══════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════
+const UKER_KEYS = {
+  KC:['KC SOLO SLAMET RIYADI','KC SOLO','334'],
+  MNH:['KCP MANAHAN','MANAHAN'],
+  NUS:['KCP NUSUKAN','NUSUKAN'],
+  MJS:['KCP MOJOSONGO','MOJOSONGO']
+};
+const UKER_LABEL = {ALL:'Konsolidasi (KC & KCP)',KC:'KC Solo Slamet Riyadi',MNH:'KCP Manahan',NUS:'KCP Nusukan',MJS:'KCP Mojosongo'};
+const MONTHS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const KPI_DEF = [
+  {key:'os',   label:'1. Total OS',     unit:'rp', lower:false, subs:[{key:'os_ncc',label:'- Non Cash Coll'},{key:'os_cc',label:'- Cash Coll'},{key:'os_kur',label:'- KUR'}]},
+  {key:'sml',  label:'2. Total SML',    unit:'rp', lower:true,  subs:[{key:'sml_ncc',label:'- Non Cash Coll'},{key:'sml_cc',label:'- Cash Coll'},{key:'sml_kur',label:'- KUR'}]},
+  {key:'npl',  label:'3. Total NPL',    unit:'rp', lower:true,  subs:[{key:'npl_ncc',label:'- Non Cash Coll'},{key:'npl_cc',label:'- Cash Coll'},{key:'npl_kur',label:'- KUR'}]},
+  {key:'lar',  label:'4. Total LAR',    unit:'rp', lower:true,  subs:[{key:'lar_ncc',label:'- Non Cash Coll'},{key:'lar_cc',label:'- Cash Coll'},{key:'lar_kur',label:'- KUR'}]},
+  {key:'lr',   label:'5. Total LR',     unit:'rp', lower:true,  subs:[{key:'lr_ncc',label:'- Non Cash Coll'},{key:'lr_cc',label:'- Cash Coll'},{key:'lr_kur',label:'- KUR'}]},
+  {key:'sml_p',label:'6. Total SML (%)',unit:'%',  lower:true,  subs:[{key:'sml_p_ncc',label:'- % Non Cash Coll'},{key:'sml_p_cc',label:'- % Cash Coll'},{key:'sml_p_kur',label:'- % KUR'}]},
+  {key:'npl_p',label:'7. Total NPL (%)',unit:'%',  lower:true,  subs:[{key:'npl_p_ncc',label:'- % Non Cash Coll'},{key:'npl_p_cc',label:'- % Cash Coll'},{key:'npl_p_kur',label:'- % KUR'}]},
+  {key:'lar_p',label:'8. Total LAR (%)',unit:'%',  lower:true,  subs:[{key:'lar_p_ncc',label:'- % Non Cash Coll'},{key:'lar_p_cc',label:'- % Cash Coll'},{key:'lar_p_kur',label:'- % KUR'}]},
+  {key:'lr_p', label:'9. Total LR (%)', unit:'%',  lower:true,  subs:[{key:'lr_p_ncc',label:'- % Non Cash Coll'},{key:'lr_p_cc',label:'- % Cash Coll'},{key:'lr_p_kur',label:'- % KUR'}]},
+];
+const RKA_KPIS = ['1. Total OS','- OS Non Cash Coll','- OS Cash Coll','- OS KUR','2. Total SML','- SML Non Cash Coll','- SML Cash Coll','- SML KUR','3. Total NPL','- NPL Non Cash Coll','- NPL Cash Coll','- NPL KUR','4. Total LAR','- LAR Non Cash Coll','- LAR Cash Coll','- LAR KUR','5. Total LR','- LR Non Cash Coll','- LR Cash Coll','- LR KUR','6. Total SML (%)','- % SML Non Cash Coll','- % SML Cash Coll','- % SML KUR','7. Total NPL (%)','- % NPL Non Cash Coll','- % NPL Cash Coll','- % NPL KUR','8. Total LAR (%)','- % LAR Non Cash Coll','- % LAR Cash Coll','- % LAR KUR','9. Total LR (%)','- % LR Non Cash Coll','- % LR Cash Coll','- % LR KUR'];
+
+// ═══════════════════════════════
+// STATE
+// ═══════════════════════════════
+const S = { today:null, mtm:null, mtd:null, ytd:null, rka:{} };
+let kolekFiltered=[], debFiltered=[], jtFiltered=[];
+let debSortCol=null, debSortDir=1, kolekSortCol=null, kolekSortDir=1;
+
+// ═══════════════════════════════
+// LOGIN
+// ═══════════════════════════════
+const DEFAULT_PIN = '1234';
+function getPin(){ return localStorage.getItem('sme_pin')||DEFAULT_PIN; }
+function doLogin(){
+  const v = document.getElementById('loginPin').value;
+  if(v===getPin()){
+    document.getElementById('loginOverlay').style.display='none';
+    loadCache(); refreshAll();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+    document.getElementById('loginPin').value='';
+  }
+}
+function showChangePinUI(){
+  const cur=prompt('Masukkan kode akses lama:');
+  if(cur!==getPin()){alert('Kode lama salah');return;}
+  const nw=prompt('Masukkan kode akses baru (4-8 digit):');
+  if(!nw||nw.length<4){alert('Kode minimal 4 digit');return;}
+  localStorage.setItem('sme_pin',nw);
+  alert('Kode akses berhasil diubah!');
+}
+
+// ═══════════════════════════════
+// CACHE
+// ═══════════════════════════════
+function saveCache(type,rows){
+  try{
+    const meta = rows.length > 0 ? {date:new Date().toISOString(),count:rows.length} : null;
+    localStorage.setItem('sme_lw_'+type, JSON.stringify(rows));
+    localStorage.setItem('sme_lw_'+type+'_meta', JSON.stringify(meta));
+  }catch(e){console.warn('Cache full:',e);}
+}
+function loadCache(){
+  ['today','mtm','mtd','ytd'].forEach(t=>{
+    try{
+      const raw=localStorage.getItem('sme_lw_'+t);
+      if(raw){ S[t]=JSON.parse(raw); markLoaded(t,'cached'); }
+    }catch(e){}
+  });
+  try{const r=localStorage.getItem('sme_rka');if(r)S.rka=JSON.parse(r);}catch(e){}
+}
+function clearCache(){
+  if(!confirm('Hapus semua data cache? Upload ulang diperlukan.'))return;
+  ['today','mtm','mtd','ytd'].forEach(t=>{
+    localStorage.removeItem('sme_lw_'+t);
+    localStorage.removeItem('sme_lw_'+t+'_meta');
+    S[t]=null;
+    const btn=document.getElementById('btn'+t.charAt(0).toUpperCase()+t.slice(1));
+    btn.classList.remove('ok');
+    document.getElementById('i'+t.charAt(0).toUpperCase()+t.slice(1)).textContent='📂';
+    const d=document.getElementById('d'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(d){d.classList.remove('ok');}
+  });
+  refreshAll();
+}
+
+// ═══════════════════════════════
+// FILE LOADING
+// ═══════════════════════════════
+function loadLW(input,type){
+  const file=input.files[0]; if(!file)return;
+  const rd=new FileReader();
+  rd.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+      // Find the data sheet (skip header rows)
+      let rows=[];
+      for(const sn of wb.SheetNames){
+        const r=XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:''});
+        if(r.length>5){rows=r;break;}
+      }
+      S[type]=rows;
+      saveCache(type,rows);
+      markLoaded(type,file.name);
+      input.value='';
+      buildRMDropdowns();
+      refreshAll();
+    }catch(err){alert('Gagal membaca file: '+err.message);}
+  };
+  rd.readAsBinaryString(file);
+}
+function markLoaded(type,name){
+  const cap=type.charAt(0).toUpperCase()+type.slice(1);
+  const btn=document.getElementById('btn'+cap);
+  if(!btn)return;
+  btn.classList.add('ok');
+  document.getElementById('i'+cap).textContent='✅';
+  btn.title=name;
+  const d=document.getElementById('d'+cap.charAt(0).toUpperCase()+cap.slice(1));
+  if(d){d.classList.remove('ok'); d.classList.add('ok');}
+  // update dot
+  const dotMap={today:'dToday',mtm:'dMTM',mtd:'dMTD',ytd:'dYTD'};
+  const dot=document.getElementById(dotMap[type]);
+  if(dot)dot.classList.add('ok');
+}
+
+// ═══════════════════════════════
+// DATA HELPERS
+// ═══════════════════════════════
+function getOS(r){ return parseFloat(r['BALANCE DALAM IDR']||r['BALANCE_DALAM_IDR']||r['KOLEKTIBILITAS LANCAR']||0); }
+function getKOL(r){ return parseInt(r['KOL_ADK']||r['KOL']||r['KOLEKTIBILITAS']||0); }
+function getUKER(r){ return String(r['UKER']||r['KANCA']||'').trim().toUpperCase(); }
+function getPN(r){ return String(r['PN PENGELOLA SINGLEPN']||r['PN_PENGELOLA_SINGLEPN']||'').trim(); }
+function getJT(r){ return String(r['TGL JATUH TEMPO']||r['TGL_JATUH_TEMPO']||'').trim(); }
+function getLNType(r){ return String(r['LN_TYPE']||'').trim().toUpperCase(); }
+function getClassification(r){ return String(r['Classification']||r['DESCRIPTION']||'').toUpperCase(); }
+
+function isNCC(r){ const t=getLNType(r); return ['DL','WZ','EB','EO','LY'].includes(t); }
+function isCC(r){ const t=getLNType(r); return ['CC','KK'].includes(t); }
+function isKUR(r){ const d=getClassification(r); return d.includes('KUR'); }
+
+function matchUker(r,key){
+  if(key==='ALL')return true;
+  const u=getUKER(r);
+  return (UKER_KEYS[key]||[]).some(k=>u.includes(k));
+}
+function matchRM(r,rm){ if(rm==='ALL')return true; return getPN(r)===rm; }
+function matchKOL(r,k){ if(k==='ALL')return true; return getKOL(r)===parseInt(k); }
+
+function filterRows(data,ukey,rm){
+  if(!data)return[];
+  return data.filter(r=>matchUker(r,ukey)&&matchRM(r,rm));
+}
+
+function aggregate(rows){
+  let os=0,sml=0,npl=0,lar=0,lr=0;
+  let os_ncc=0,sml_ncc=0,npl_ncc=0,lar_ncc=0,lr_ncc=0;
+  let os_cc=0,sml_cc=0,npl_cc=0,lar_cc=0,lr_cc=0;
+  rows.forEach(r=>{
+    const v=getOS(r), kol=getKOL(r);
+    os+=v;
+    const ncc=isNCC(r), cc=isCC(r);
+    if(ncc)os_ncc+=v; if(cc)os_cc+=v;
+    if([2,3,4,5].includes(kol)){ sml+=v; if(ncc)sml_ncc+=v; if(cc)sml_cc+=v; }
+    if([3,4,5].includes(kol)){ npl+=v; if(ncc)npl_ncc+=v; if(cc)npl_cc+=v; }
+    if([2,3,4,5].includes(kol)){ lar+=v; if(ncc)lar_ncc+=v; if(cc)lar_cc+=v; }
+    if([4,5].includes(kol)){ lr+=v; if(ncc)lr_ncc+=v; if(cc)lr_cc+=v; }
+  });
+  const pct=(a,b)=>b>0?a/b:0;
+  return {
+    os,sml,npl,lar,lr,os_ncc,sml_ncc,npl_ncc,lar_ncc,lr_ncc,os_cc,sml_cc,npl_cc,lar_cc,lr_cc,
+    os_kur:0,sml_kur:0,npl_kur:0,lar_kur:0,lr_kur:0,
+    sml_p:pct(sml,os),npl_p:pct(npl,os),lar_p:pct(lar,os),lr_p:pct(lr,os),
+    sml_p_ncc:pct(sml_ncc,os_ncc),npl_p_ncc:pct(npl_ncc,os_ncc),lar_p_ncc:pct(lar_ncc,os_ncc),lr_p_ncc:pct(lr_ncc,os_ncc),
+    sml_p_cc:pct(sml_cc,os_cc),npl_p_cc:pct(npl_cc,os_cc),lar_p_cc:pct(lar_cc,os_cc),lr_p_cc:pct(lr_cc,os_cc),
+    sml_p_kur:0,npl_p_kur:0,lar_p_kur:0,lr_p_kur:0,
+    count:rows.length
+  };
+}
+
+// ═══════════════════════════════
+// FORMATTING
+// ═══════════════════════════════
+function fmtRp(v){ if(v===null||v===undefined||isNaN(v))return '-'; return 'Rp '+Math.round(v).toLocaleString('id-ID'); }
+function fmtPct(v){ if(v===null||v===undefined||isNaN(v))return '-'; return (v*100).toFixed(4)+'%'; }
+function fmt(v,unit){ return unit==='%'?fmtPct(v):fmtRp(v); }
+function fmtGap(v,unit,lower){
+  if(v===null||v===undefined||isNaN(v))return '<span>-</span>';
+  const good=lower?(v<=0):(v>=0);
+  const cls=good?'pos':'neg';
+  const arrow=v>=0?'▲':'▼';
+  return `<span class="${cls}">${arrow} ${fmt(Math.abs(v),unit)}</span>`;
+}
+function fmtPctAch(v){
+  if(v===null||v===undefined||isNaN(v))return '-';
+  const pct=(v*100).toFixed(2)+'%';
+  const cls=v>=1?'pct-ok':'pct-bad';
+  return `<span class="${cls}">${pct}</span>`;
+}
+
+// ═══════════════════════════════
+// RM DROPDOWNS
+// ═══════════════════════════════
+function buildRMDropdowns(){
+  const data=S.today||S.mtd||[];
+  const rms=[...new Set(data.map(r=>getPN(r)).filter(x=>x&&x!=' - '))].sort();
+  ['selRMDash','selRMKolek','selRMDeb','selRMJT'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const cur=el.value;
+    el.innerHTML='<option value="ALL">Semua RM</option>';
+    rms.forEach(rm=>el.innerHTML+=`<option value="${rm}">${rm}</option>`);
+    if(rms.includes(cur))el.value=cur;
+  });
+}
+
+// ═══════════════════════════════
+// RENDER DASHBOARD
+// ═══════════════════════════════
+function renderDashboard(){
+  const ukey=document.getElementById('selUker').value;
+  const rm=document.getElementById('selRMDash').value;
+  if(!S.today){
+    document.getElementById('dashTable').innerHTML='<div class="empty"><div class="ei">📊</div><h3>Upload Data untuk Melihat Dashboard</h3><p>Upload LW Today minimal, atau klik Demo.</p></div>';
+    return;
+  }
+  const kT=aggregate(filterRows(S.today,ukey,rm));
+  const kMTM=S.mtm?aggregate(filterRows(S.mtm,ukey,rm)):null;
+  const kMTD=S.mtd?aggregate(filterRows(S.mtd,ukey,rm)):null;
+  const kYTD=S.ytd?aggregate(filterRows(S.ytd,ukey,rm)):null;
+
+  const today=new Date();
+  const tStr=today.toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('dashDate').textContent=tStr;
+  document.getElementById('hdrDate').textContent=tStr;
+
+  // Build RKA lookup
+  const mIdx=today.getMonth();
+  function getRKA(kpiLabel){
+    const k=`${ukey}||${kpiLabel}`;
+    const arr=S.rka[k];
+    if(!arr)return null;
+    return parseFloat(arr[mIdx])||null;
+  }
+
+  let html=`<div style="padding:10px 14px;background:var(--navy);color:var(--white);font-weight:700;font-size:12px;display:flex;justify-content:space-between">
+    <span>KERAGAAN HARIAN SME ${UKER_LABEL[ukey].toUpperCase()}</span>
+    <span>${tStr}</span></div>
+  <table><thead>
+    <tr class="sub-head">
+      <th class="tl" colspan="2">KPI</th>
+      <th colspan="4" style="text-align:center">Posisi</th>
+      <th colspan="3" style="text-align:center">Gap</th>
+      <th colspan="3" style="text-align:center">Pencapaian RKA Bulan Ini</th>
+      <th colspan="3" style="text-align:center">Pencapaian RKA Akhir Tahun</th>
+    </tr>
+    <tr>
+      <th class="tl">No</th><th class="tl">KPI</th>
+      <th><span class="tag t-ytd">YTD</span></th>
+      <th><span class="tag t-mtd">MTD</span></th>
+      <th><span class="tag t-mtm">MTM</span></th>
+      <th><span class="tag t-today">Today</span></th>
+      <th>Gap YTD</th><th>Gap MTM</th><th>Gap MTD</th>
+      <th><span class="tag t-rka">RKA Bln</span></th><th>Gap RKA</th><th>%</th>
+      <th><span class="tag t-rka">RKA Thn</span></th><th>Gap RKA</th><th>%</th>
+    </tr>
+  </thead><tbody>`;
+
+  KPI_DEF.forEach((kd,i)=>{
+    const v=kT[kd.key]||0;
+    const mtm=kMTM?kMTM[kd.key]:null;
+    const mtd=kMTD?kMTD[kd.key]:null;
+    const ytd=kYTD?kYTD[kd.key]:null;
+    const gYTD=ytd!==null?v-ytd:null;
+    const gMTM=mtm!==null?v-mtm:null;
+    const gMTD=mtd!==null?v-mtd:null;
+    const rka=getRKA(kd.label);
+    const gRKA=rka!==null?v-rka:null;
+    const pRKA=rka!==null&&rka!==0?v/rka:null;
+    const rkaYr=getRKA(kd.label+'_yr');
+    const gRKAyr=rkaYr!==null?v-rkaYr:null;
+    const pRKAyr=rkaYr!==null&&rkaYr!==0?v/rkaYr:null;
+
+    html+=`<tr class="gh">
+      <td>${i+1}</td><td class="tl" style="font-weight:800">${kd.label}</td>
+      <td class="r">${ytd!==null?fmt(ytd,kd.unit):'-'}</td>
+      <td class="r">${mtd!==null?fmt(mtd,kd.unit):'-'}</td>
+      <td class="r">${mtm!==null?fmt(mtm,kd.unit):'-'}</td>
+      <td class="r" style="font-weight:800">${fmt(v,kd.unit)}</td>
+      <td class="r">${fmtGap(gYTD,kd.unit,kd.lower)}</td>
+      <td class="r">${fmtGap(gMTM,kd.unit,kd.lower)}</td>
+      <td class="r">${fmtGap(gMTD,kd.unit,kd.lower)}</td>
+      <td class="r">${rka!==null?fmt(rka,kd.unit):'-'}</td>
+      <td class="r">${fmtGap(gRKA,kd.unit,kd.lower)}</td>
+      <td class="r">${fmtPctAch(pRKA)}</td>
+      <td class="r">-</td><td class="r">-</td><td class="r">-</td>
+    </tr>`;
+
+    kd.subs.forEach(sub=>{
+      const sv=kT[sub.key]||0;
+      const sm=kMTM?kMTM[sub.key]:null;
+      const sd=kMTD?kMTD[sub.key]:null;
+      const sy=kYTD?kYTD[sub.key]:null;
+      const srka=getRKA(sub.label);
+      html+=`<tr class="sub">
+        <td></td><td class="tl">${sub.label}</td>
+        <td class="r">${sy!==null?fmt(sy,kd.unit):'-'}</td>
+        <td class="r">${sd!==null?fmt(sd,kd.unit):'-'}</td>
+        <td class="r">${sm!==null?fmt(sm,kd.unit):'-'}</td>
+        <td class="r">${fmt(sv,kd.unit)}</td>
+        <td class="r">${fmtGap(sy!==null?sv-sy:null,kd.unit,kd.lower)}</td>
+        <td class="r">${fmtGap(sm!==null?sv-sm:null,kd.unit,kd.lower)}</td>
+        <td class="r">${fmtGap(sd!==null?sv-sd:null,kd.unit,kd.lower)}</td>
+        <td class="r">${srka!==null?fmt(srka,kd.unit):'-'}</td>
+        <td class="r">${srka!==null?fmtGap(sv-srka,kd.unit,kd.lower):'-'}</td>
+        <td class="r">${srka&&srka!==0?fmtPctAch(sv/srka):'-'}</td>
+        <td class="r">-</td><td class="r">-</td><td class="r">-</td>
+      </tr>`;
+    });
+  });
+
+  html+='</tbody></table>';
+  document.getElementById('dashTable').innerHTML=html;
+}
+
+// ═══════════════════════════════
+// KOLEKTIBILITAS
+// ═══════════════════════════════
+function renderKolek(){
+  const ukey=document.getElementById('selUkerKolek').value;
+  const rm=document.getElementById('selRMKolek').value;
+  const ka=document.getElementById('selKolAwal').value;
+  const kb=document.getElementById('selKolAkhir').value;
+  if(!S.today||!S.mtd){
+    document.getElementById('kolekTable').innerHTML='<div class="empty"><div class="ei">📋</div><h3>Upload LW Today + LW MTD</h3></div>';
+    return;
+  }
+  const todayRows=filterRows(S.today,ukey,rm);
+  const mtdMap={};
+  filterRows(S.mtd,ukey,rm).forEach(r=>{mtdMap[String(r['NOMOR_REKENING']||'').trim()]=getKOL(r);});
+
+  kolekFiltered=todayRows.filter(r=>{
+    const kolNow=getKOL(r);
+    const kolPrev=mtdMap[String(r['NOMOR_REKENING']||'').trim()]||kolNow;
+    if(ka!=='ALL'&&kolPrev!==parseInt(ka))return false;
+    if(kb!=='ALL'&&kolNow!==parseInt(kb))return false;
+    return true;
+  }).map(r=>{
+    const rec=String(r['NOMOR_REKENING']||'').trim();
+    return {...r, _kolAwal:mtdMap[rec]||getKOL(r), _kolAkhir:getKOL(r)};
+  });
+
+  document.getElementById('kolekCount').textContent=kolekFiltered.length+' debitur';
+  renderKolekTableData(kolekFiltered);
+}
+function renderKolekTableData(rows){
+  if(!rows.length){document.getElementById('kolekTable').innerHTML='<div class="empty"><div class="ei">✅</div><h3>Tidak ada debitur</h3></div>';return;}
+  const cols=[
+    {k:'PN PENGELOLA SINGLEPN',l:'PN Pengelola',s:true},
+    {k:'UKER',l:'Uker',s:true},
+    {k:'NAMA_DEBITUR',l:'Nama Debitur',s:true},
+    {k:'NOMOR_REKENING',l:'No. Rekening',s:true},
+    {k:'PLAFON DALAM IDR',l:'Plafon',s:true,r:true},
+    {k:'_os',l:'OS (Rp)',s:true,r:true},
+    {k:'_kolAwal',l:'KOL Awal',s:true,c:true},
+    {k:'_kolAkhir',l:'KOL Akhir',s:true,c:true},
+    {k:'LN_TYPE',l:'Type',s:true},
+  ];
+  let html=`<table><thead><tr>`;
+  cols.forEach((c,i)=>html+=`<th class="${c.r?'':'tl'} ${c.s?'sortable':''}" onclick="sortKolek(${i})">${c.l}</th>`);
+  html+='</tr></thead><tbody>';
+  rows.slice(0,500).forEach(r=>{
+    const os=getOS(r);
+    html+=`<tr>
+      <td style="font-size:10px;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r['PN PENGELOLA SINGLEPN']||''}</td>
+      <td style="font-size:10px">${r['UKER']||''}</td>
+      <td style="font-weight:600">${r['NAMA_DEBITUR']||''}</td>
+      <td class="r">${r['NOMOR_REKENING']||''}</td>
+      <td class="r">${fmtRp(parseFloat(r['PLAFON DALAM IDR']||r['PLAFON']||0))}</td>
+      <td class="r">${fmtRp(os)}</td>
+      <td style="text-align:center">${kolBadge(r._kolAwal)}</td>
+      <td style="text-align:center">${kolBadge(r._kolAkhir)}</td>
+      <td style="text-align:center;font-size:10px;font-weight:700;color:var(--blue)">${r['LN_TYPE']||''}</td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  if(rows.length>500)html+=`<div style="padding:8px 14px;font-size:11px;color:var(--text-muted)">Menampilkan 500/${rows.length} baris.</div>`;
+  document.getElementById('kolekTable').innerHTML=html;
+}
+function sortKolek(colIdx){
+  const colKeys=['PN PENGELOLA SINGLEPN','UKER','NAMA_DEBITUR','NOMOR_REKENING','PLAFON DALAM IDR','_os','_kolAwal','_kolAkhir','LN_TYPE'];
+  const key=colKeys[colIdx];
+  if(kolekSortCol===colIdx)kolekSortDir*=-1; else{kolekSortCol=colIdx;kolekSortDir=1;}
+  kolekFiltered.sort((a,b)=>{
+    const av=key==='_os'?getOS(a):(a[key]||'');
+    const bv=key==='_os'?getOS(b):(b[key]||'');
+    return av>bv?kolekSortDir:av<bv?-kolekSortDir:0;
+  });
+  renderKolekTableData(kolekFiltered);
+}
+function filterKolekTable(){
+  const q=document.getElementById('kolekSearch').value.toLowerCase();
+  const f=q?kolekFiltered.filter(r=>
+    String(r['NAMA_DEBITUR']||'').toLowerCase().includes(q)||
+    String(r['NOMOR_REKENING']||'').includes(q)||
+    String(r['PN PENGELOLA SINGLEPN']||'').toLowerCase().includes(q)
+  ):kolekFiltered;
+  document.getElementById('kolekCount').textContent=f.length+' debitur';
+  renderKolekTableData(f);
+}
+function kolBadge(k){
+  const n=parseInt(k);
+  if(n===1)return '<span class="badge bl">Lancar</span>';
+  if(n===2)return '<span class="badge bs">SML</span>';
+  if(n===3||n===4||n===5)return '<span class="badge bn">NPL</span>';
+  return k||'-';
+}
+
+// ═══════════════════════════════
+// DATA DEBITUR
+// ═══════════════════════════════
+function renderDebitur(){
+  if(!S.today){document.getElementById('debTable').innerHTML='<div class="empty"><div class="ei">👥</div><h3>Upload data terlebih dahulu</h3></div>';return;}
+  const ukey=document.getElementById('selUkerDeb').value;
+  const rm=document.getElementById('selRMDeb').value;
+  const kol=document.getElementById('selKolDeb').value;
+  let rows=filterRows(S.today,ukey,rm).filter(r=>matchKOL(r,kol));
+  debFiltered=rows;
+  document.getElementById('debCount').textContent=rows.length+' debitur';
+  renderDebTableData(rows.slice(0,300));
+}
+function renderDebTableData(rows){
+  if(!rows.length){document.getElementById('debTable').innerHTML='<div class="empty"><div class="ei">🔍</div><h3>Tidak ada data</h3></div>';return;}
+  const colDefs=[
+    {l:'PN Pengelola'},{l:'Uker'},{l:'Nama Debitur',tl:1},{l:'No. Rekening',r:1},
+    {l:'Plafon (Rp)',r:1,s:true},{l:'OS (Rp)',r:1,s:true},{l:'KOL',c:1},{l:'Type'},{l:'Rate',r:1},{l:'Jatuh Tempo'}
+  ];
+  let html=`<table><thead><tr>`;
+  colDefs.forEach((c,i)=>html+=`<th class="${c.r||c.tl?'tl':''} ${c.s?'sortable':''}" onclick="sortDeb(${i})">${c.l}</th>`);
+  html+='</tr></thead><tbody>';
+  rows.forEach(r=>{
+    const os=getOS(r);
+    html+=`<tr>
+      <td style="font-size:10px;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${getPN(r)}</td>
+      <td style="font-size:10px">${getUKER(r)}</td>
+      <td style="font-weight:600;font-size:11px">${r['NAMA_DEBITUR']||''}</td>
+      <td class="r">${r['NOMOR_REKENING']||''}</td>
+      <td class="r">${fmtRp(parseFloat(r['PLAFON DALAM IDR']||r['PLAFON']||0))}</td>
+      <td class="r" style="font-weight:700">${fmtRp(os)}</td>
+      <td style="text-align:center">${kolBadge(getKOL(r))}</td>
+      <td style="text-align:center;font-size:10px;font-weight:700;color:var(--blue)">${r['LN_TYPE']||''}</td>
+      <td class="r">${r['RATE']||''}%</td>
+      <td style="font-size:10px;white-space:nowrap">${getJT(r)}</td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  if(debFiltered.length>300)html+=`<div style="padding:8px 14px;font-size:11px;color:var(--text-muted)">Menampilkan 300/${debFiltered.length}. Gunakan filter.</div>`;
+  document.getElementById('debTable').innerHTML=html;
+}
+function sortDeb(colIdx){
+  const keys=[null,null,'NAMA_DEBITUR','NOMOR_REKENING','PLAFON DALAM IDR','_os',null,null,'RATE','TGL JATUH TEMPO'];
+  const key=keys[colIdx];
+  if(!key)return;
+  if(debSortCol===colIdx)debSortDir*=-1; else{debSortCol=colIdx;debSortDir=1;}
+  debFiltered.sort((a,b)=>{
+    const av=key==='_os'?getOS(a):(parseFloat(a[key])||a[key]||'');
+    const bv=key==='_os'?getOS(b):(parseFloat(b[key])||b[key]||'');
+    return av>bv?debSortDir:av<bv?-debSortDir:0;
+  });
+  renderDebTableData(debFiltered.slice(0,300));
+}
+function filterDebTable(){
+  const q=document.getElementById('debSearch').value.toLowerCase();
+  const f=q?debFiltered.filter(r=>
+    String(r['NAMA_DEBITUR']||'').toLowerCase().includes(q)||
+    String(r['NOMOR_REKENING']||'').includes(q)||
+    getPN(r).toLowerCase().includes(q)
+  ):debFiltered;
+  renderDebTableData(f.slice(0,300));
+}
+
+// ═══════════════════════════════
+// JATUH TEMPO
+// ═══════════════════════════════
+function renderJT(){
+  const data=S.today;
+  if(!data){
+    document.getElementById('jtTable').innerHTML='<div class="empty"><div class="ei">📅</div><h3>Upload LW Today untuk melihat jatuh tempo</h3></div>';
+    document.getElementById('jtMonthCards').innerHTML='';
+    return;
+  }
+  const ukey=document.getElementById('selUkerJT').value;
+  const rm=document.getElementById('selRMJT').value;
+  const kol=document.getElementById('selKolJT').value;
+  const today=new Date();
+  const months3=[0,1,2].map(i=>{
+    const d=new Date(today.getFullYear(),today.getMonth()+i,1);
+    return {year:d.getFullYear(),month:d.getMonth(),label:MONTHS[d.getMonth()]+' '+d.getFullYear()};
+  });
+
+  const allRows=filterRows(data,ukey,rm).filter(r=>matchKOL(r,kol));
+  
+  function parseDate(s){
+    if(!s)return null;
+    // dd/mm/yyyy or similar
+    const parts=s.split('/');
+    if(parts.length===3){
+      const [d,m,y]=parts;
+      const dt=new Date(parseInt(y),parseInt(m)-1,parseInt(d));
+      return isNaN(dt)?null:dt;
+    }
+    // Excel serial
+    const n=parseInt(s);
+    if(!isNaN(n)&&n>40000){
+      const d=new Date((n-25569)*86400000);
+      return isNaN(d)?null:d;
+    }
+    return null;
+  }
+
+  const byMonth={};
+  months3.forEach(m=>byMonth[m.label]=[]);
+
+  allRows.forEach(r=>{
+    const jt=parseDate(getJT(r));
+    if(!jt)return;
+    const yr=jt.getFullYear(), mo=jt.getMonth();
+    const ml=months3.find(m=>m.year===yr&&m.month===mo);
+    if(ml)byMonth[ml.label].push({...r,_jt:jt});
+  });
+
+  jtFiltered=allRows.filter(r=>{
+    const jt=parseDate(getJT(r));
+    if(!jt)return false;
+    return months3.some(m=>m.year===jt.getFullYear()&&m.month===jt.getMonth());
+  });
+  document.getElementById('jtCount').textContent=jtFiltered.length+' debitur';
+
+  // Summary cards
+  let cards='';
+  months3.forEach(m=>{
+    const rows=byMonth[m.label];
+    const totalOS=rows.reduce((a,r)=>a+getOS(r),0);
+    const npl=rows.filter(r=>getKOL(r)>=3).length;
+    const sml=rows.filter(r=>getKOL(r)===2).length;
+    cards+=`<div class="jt-card">
+      <div class="jt-card-hdr">
+        <span>📅 ${m.label}</span>
+        <span class="cnt-badge">${rows.length} debitur</span>
+      </div>
+      <div class="jt-card-body">
+        <div class="jt-row"><span>Total OS Jatuh Tempo</span><span style="font-weight:700">${fmtRp(totalOS)}</span></div>
+        <div class="jt-row"><span>Lancar</span><span>${rows.filter(r=>getKOL(r)===1).length} debitur</span></div>
+        <div class="jt-row"><span style="color:#d35400">SML</span><span>${sml} debitur</span></div>
+        <div class="jt-row"><span style="color:var(--red)">NPL</span><span>${npl} debitur</span></div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('jtMonthCards').innerHTML=`<div class="jt-grid">${cards}</div>`;
+
+  // Detail table
+  const sorted=[...jtFiltered].sort((a,b)=>(parseDate(getJT(a))||0)-(parseDate(getJT(b))||0));
+  let html=`<table><thead><tr>
+    <th class="tl">PN Pengelola</th><th class="tl">Nama Debitur</th>
+    <th>No. Rekening</th><th>Jatuh Tempo</th><th>OS (Rp)</th>
+    <th>Plafon</th><th>KOL</th><th>Type</th><th>Rate</th>
+  </tr></thead><tbody>`;
+  sorted.forEach(r=>{
+    const jt=r._jt||parseDate(getJT(r));
+    const mo=jt?MONTHS[jt.getMonth()]+' '+jt.getFullYear():'';
+    html+=`<tr>
+      <td style="font-size:10px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${getPN(r)}</td>
+      <td style="font-weight:600;font-size:11px">${r['NAMA_DEBITUR']||''}</td>
+      <td class="r">${r['NOMOR_REKENING']||''}</td>
+      <td style="text-align:center;font-size:11px;white-space:nowrap"><span class="tag t-mtd">${mo}</span></td>
+      <td class="r" style="font-weight:700">${fmtRp(getOS(r))}</td>
+      <td class="r">${fmtRp(parseFloat(r['PLAFON DALAM IDR']||r['PLAFON']||0))}</td>
+      <td style="text-align:center">${kolBadge(getKOL(r))}</td>
+      <td style="text-align:center;font-size:10px;font-weight:700;color:var(--blue)">${r['LN_TYPE']||''}</td>
+      <td class="r">${r['RATE']||''}%</td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('jtTable').innerHTML=html;
+}
+function filterJTTable(){
+  const q=document.getElementById('jtSearch').value.toLowerCase();
+  const f=q?jtFiltered.filter(r=>
+    String(r['NAMA_DEBITUR']||'').toLowerCase().includes(q)||
+    String(r['NOMOR_REKENING']||'').includes(q)
+  ):jtFiltered;
+  document.getElementById('jtCount').textContent=f.length+' debitur';
+  // re-render just table rows inline
+}
+
+// ═══════════════════════════════
+// RKA
+// ═══════════════════════════════
+function renderRKA(){
+  const ukey=document.getElementById('selUkerRKA').value;
+  const uLabel=UKER_LABEL[ukey];
+  let html=`<div class="rka-header"><span>${uLabel}</span><span style="font-size:10px;color:var(--accent)">Dalam Rupiah Penuh</span></div>
+  <div class="rka-section"><div class="rka-month-hdr"><div>KPI</div>${MONTHS.map(m=>`<div>${m}</div>`).join('')}</div>`;
+
+  RKA_KPIS.forEach(kpi=>{
+    const isSub=kpi.startsWith('-');
+    const key=`${ukey}||${kpi}`;
+    const vals=S.rka[key]||Array(12).fill('');
+    html+=`<div class="rka-row ${isSub?'sub':''}">
+      <div>${kpi}</div>
+      ${vals.map((v,i)=>`<div><input type="number" step="1" value="${v}" placeholder="0"
+        onchange="setRKA('${key.replace(/'/g,"\\'")}',${i},this.value)" title="${MONTHS[i]}: ${kpi}"></div>`).join('')}
+    </div>`;
+  });
+  html+='</div>';
+  document.getElementById('rkaContent').innerHTML=html;
+}
+function setRKA(key,idx,val){
+  if(!S.rka[key])S.rka[key]=Array(12).fill('');
+  S.rka[key][idx]=val;
+  try{localStorage.setItem('sme_rka',JSON.stringify(S.rka));}catch(e){}
+}
+function saveRKA(){
+  try{localStorage.setItem('sme_rka',JSON.stringify(S.rka));alert('✅ RKA berhasil disimpan!');}
+  catch(e){alert('Gagal: '+e.message);}
+}
+function exportRKA(){
+  const ukey=document.getElementById('selUkerRKA').value;
+  const wb=XLSX.utils.book_new();
+  const hdr=['Unit Kerja','KPI',...MONTHS];
+  const data=[hdr];
+  RKA_KPIS.forEach(kpi=>{
+    const vals=S.rka[`${ukey}||${kpi}`]||Array(12).fill('');
+    data.push([UKER_LABEL[ukey],kpi,...vals]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb,ws,'RKA');
+  XLSX.writeFile(wb,`RKA_SME_${UKER_LABEL[ukey].replace(/ /g,'_')}.xlsx`);
+}
+function importRKAFile(input){
+  const file=input.files[0];if(!file)return;
+  const rd=new FileReader();
+  rd.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+      let imported=0;
+      rows.forEach(r=>{
+        const ukey=Object.entries(UKER_LABEL).find(([k,v])=>v===String(r['Unit Kerja']||'').trim());
+        const kpi=String(r['KPI']||'').trim();
+        if(!ukey||!kpi)return;
+        const key=`${ukey[0]}||${kpi}`;
+        S.rka[key]=MONTHS.map(m=>r[m]||'');
+        imported++;
+      });
+      saveRKA();
+      renderRKA();
+      alert(`Imported ${imported} KPI rows.`);
+    }catch(err){alert('Gagal import: '+err.message);}
+  };
+  rd.readAsBinaryString(file);
+  input.value='';
+}
+
+// ═══════════════════════════════
+// EXPORT
+// ═══════════════════════════════
+function exportDashExcel(){
+  const ukey=document.getElementById('selUker').value;
+  const rm=document.getElementById('selRMDash').value;
+  if(!S.today){alert('Upload data dahulu');return;}
+  const kT=aggregate(filterRows(S.today,ukey,rm));
+  const kMTD=S.mtd?aggregate(filterRows(S.mtd,ukey,rm)):null;
+  const kMTM=S.mtm?aggregate(filterRows(S.mtm,ukey,rm)):null;
+  const kYTD=S.ytd?aggregate(filterRows(S.ytd,ukey,rm)):null;
+  const hdr=['KPI','YTD','MTD','MTM','Today','Gap YTD','Gap MTM','Gap MTD'];
+  const data=[hdr];
+  KPI_DEF.forEach(kd=>{
+    const v=kT[kd.key]||0;
+    const mtd=kMTD?kMTD[kd.key]:null;
+    const mtm=kMTM?kMTM[kd.key]:null;
+    const ytd=kYTD?kYTD[kd.key]:null;
+    data.push([kd.label,ytd,mtd,mtm,v,ytd!==null?v-ytd:null,mtm!==null?v-mtm:null,mtd!==null?v-mtd:null]);
+    kd.subs.forEach(s=>{
+      const sv=kT[s.key]||0;
+      data.push([s.label,kYTD?kYTD[s.key]:null,kMTD?kMTD[s.key]:null,kMTM?kMTM[s.key]:null,sv,null,null,null]);
+    });
+  });
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Dashboard');
+  XLSX.writeFile(wb,`Dashboard_SME_${new Date().toLocaleDateString('id-ID').replace(/\//g,'-')}.xlsx`);
+}
+function exportDashPDF(){ window.print(); }
+function exportKolekCSV(){
+  if(!kolekFiltered.length){alert('Belum ada data');return;}
+  exportToCSV(kolekFiltered,'Kolektibilitas');
+}
+function exportDebCSV(){
+  if(!debFiltered.length){alert('Belum ada data');return;}
+  exportToCSV(debFiltered,'Debitur');
+}
+function exportJTCSV(){
+  if(!jtFiltered.length){alert('Belum ada data');return;}
+  exportToCSV(jtFiltered,'JatuhTempo');
+}
+function exportToCSV(rows,name){
+  if(!rows.length)return;
+  const keys=Object.keys(rows[0]).filter(k=>!k.startsWith('_'));
+  const lines=[keys.join(','),...rows.map(r=>keys.map(k=>'"'+(r[k]||'')+'"').join(','))];
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(lines.join('\n'));
+  a.download=name+'_'+new Date().toLocaleDateString('id-ID').replace(/\//g,'-')+'.csv';
+  a.click();
+}
+
+// ═══════════════════════════════
+// DEMO DATA
+// ═══════════════════════════════
+function loadDemo(){
+  const ukers=['KC Solo Slamet Riyadi','KCP MANAHAN','KCP NUSUKAN','KCP MOJOSONGO'];
+  const pns=['00061806 - Gusur Priyatno','00072383 - Nugroho Dwi Wartono Adi','00219000 - Lukas Setyo Daryono','00304344 - Lissa Bella Ayu Prameswari','00378876 - Brian Hayom Satwika','00387236 - Veisa Nathania Ratnaningtyas','00070995 - Priscilla Meylana Nasution','00134243 - Roni Saputra','00398807 - Jimmy Azet'];
+  const names=['SUTARMIN','JAROT WIJADMO','CAHYA GURUH PRADIPTA','ADI PUDIANTO','DANANG TRI PRASTOWO','SUMARDI','TEGUH SANTOSO','NITA HERAWATI','FRANSISCA SRI HARINI','ANDI WIBOWO','PT LOMBOK GANDARIA','HERI ISWANTO','BUYUNG SAJADI','GRAHA PRINTAMA'];
+  const types=['DL','WZ','EB','EO','LY'];
+  function makeRows(baseOS,nplR,smlR){
+    const rows=[];
+    for(let i=0;i<120;i++){
+      const uker=ukers[i%ukers.length];
+      const os=(baseOS/120)*(0.7+Math.random()*0.6);
+      const rnd=Math.random();
+      let kol=1;
+      if(rnd<nplR)kol=3; else if(rnd<nplR+smlR)kol=2;
+      const jt=new Date(); jt.setDate(1); jt.setMonth(jt.getMonth()+Math.floor(Math.random()*3));
+      const jtStr=`${String(jt.getDate()).padStart(2,'0')}/${String(jt.getMonth()+1).padStart(2,'0')}/${jt.getFullYear()}`;
+      rows.push({
+        'PN PENGELOLA SINGLEPN':pns[i%pns.length],'UKER':uker,'KANCA':uker,
+        'NAMA_DEBITUR':names[i%names.length],'NOMOR_REKENING':'0000334'+String(i).padStart(10,'0'),
+        'PLAFON DALAM IDR':Math.round(os*1.2),'BALANCE DALAM IDR':os,
+        'KOL_ADK':kol,'LN_TYPE':types[i%types.length],
+        'RATE':11.5+(i%5)*0.5,'TGL JATUH TEMPO':jtStr,'FLAG RESTRUK':i%8===0?'Y':'N'
+      });
+    }
+    return rows;
+  }
+  S.today=makeRows(418167723180,0.10,0.08);
+  S.mtm=makeRows(425901907168,0.09,0.07);
+  S.mtd=makeRows(423538121148,0.098,0.075);
+  S.ytd=makeRows(428368387085,0.085,0.065);
+  ['today','mtm','mtd','ytd'].forEach(t=>markLoaded(t,'Demo'));
+  buildRMDropdowns(); refreshAll();
+}
+
+// ═══════════════════════════════
+// NAVIGATION & REFRESH
+// ═══════════════════════════════
+function goPage(name,tab){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  tab.classList.add('active');
+  if(name==='dashboard')renderDashboard();
+  else if(name==='kolek')renderKolek();
+  else if(name==='debitur')renderDebitur();
+  else if(name==='jt')renderJT();
+  else if(name==='rka')renderRKA();
+}
+function refreshAll(){
+  const active=document.querySelector('.page.active');
+  if(!active)return;
+  const id=active.id.replace('page-','');
+  if(id==='dashboard')renderDashboard();
+  else if(id==='kolek')renderKolek();
+  else if(id==='debitur')renderDebitur();
+  else if(id==='jt')renderJT();
+  else if(id==='rka')renderRKA();
+}
+
+// ═══════════════════════════════
+// INIT
+// ═══════════════════════════════
+document.getElementById('hdrDate').textContent=new Date().toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+// Login enter key
+document.getElementById('loginPin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+</script>
+</body>
+</html>
